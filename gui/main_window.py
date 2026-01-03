@@ -13,13 +13,17 @@ from core.config_manager import ConfigManager, Setup, KeyConfig
 class MainWindow(ctk.CTk):
     """Main application window"""
     
-    def __init__(self):
+    def __init__(self, start_hidden=False):
         super().__init__()
         
         # Window configuration
         self.title("SpecifInput - Background Input Sender")
         self.geometry("700x800")
         self.resizable(False, False)
+        
+        # Hide window initially if requested
+        if start_hidden:
+            self.withdraw()
         
         # Initialize core components
         self.window_manager = WindowManager()
