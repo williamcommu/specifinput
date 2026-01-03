@@ -1,4 +1,5 @@
-# SpecifInput
+<img width="613" height="146" alt="image" src="https://github.com/user-attachments/assets/f570dcdc-e2ae-493f-bca3-1d7cd51b0f07" />
+
 
 Send keyboard inputs to specific windows in the background - perfect for AFK prevention without losing focus on your current work.
 
