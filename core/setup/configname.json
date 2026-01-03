@@ -1,0 +1,14 @@
+{
+    "config": {
+        "window_id": "0x0360000e",
+        "window_title": "MyApp",
+        "keybind": "Ctrl+F",
+        "interval": 5
+    },
+    "process": {
+        "w": {"hold": 0.1},
+        "a": {"hold": 0.5, "repeat": 3, "wait": 0.2},
+        "s": {"hold": 0.3},
+        "d": {"hold": 0.4}
+    }
+}
