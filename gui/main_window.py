@@ -4,6 +4,8 @@ import customtkinter as ctk
 from tkinter import messagebox, simpledialog
 from typing import List, Dict
 import threading
+import os
+from PIL import Image
 from core.window_manager import WindowManager
 from core.enhanced_input_sender import EnhancedInputSender
 from core.enhanced_scheduler import EnhancedScheduler, SimpleScheduler
@@ -20,6 +22,9 @@ class MainWindow(ctk.CTk):
         self.title("SpecifInput - Background Input Sender")
         self.geometry("700x800")
         self.resizable(False, False)
+        
+        # Set window icon
+        self.set_window_icon()
         
         # Hide window initially if requested
         if start_hidden:
@@ -47,6 +52,43 @@ class MainWindow(ctk.CTk):
         
         # Setup keybind (F9 by default)
         self.update_keybind()
+    
+    def set_window_icon(self):
+        """Set the window icon to the logo"""
+        try:
+            # Get the path to the logo image
+            logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
+            
+            if os.path.exists(logo_path):
+                # Load the image using PIL
+                logo_image = Image.open(logo_path)
+                
+                # Convert to PhotoImage for tkinter
+                from tkinter import PhotoImage
+                # We need to use a temporary file approach for PhotoImage with PNG
+                import tempfile
+                
+                # Convert to a format tkinter can handle
+                temp_path = tempfile.mktemp(suffix='.ppm')
+                logo_image.save(temp_path, 'PPM')
+                
+                # Load as PhotoImage
+                icon_photo = PhotoImage(file=temp_path)
+                
+                # Set the window icon
+                self.wm_iconphoto(True, icon_photo)
+                
+                # Store reference to prevent garbage collection
+                self._icon_photo = icon_photo
+                
+                # Clean up temp file
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
+                
+        except Exception as e:
+            print(f"Could not set window icon: {e}")
     
     def setup_ui(self):
         """Create and layout all UI elements"""
