@@ -5,7 +5,8 @@ from tkinter import messagebox, simpledialog
 from typing import List, Dict
 import threading
 import os
-from PIL import Image
+import sys
+from PIL import Image, ImageTk
 from core.window_manager import WindowManager
 from core.enhanced_input_sender import EnhancedInputSender
 from core.enhanced_scheduler import EnhancedScheduler, SimpleScheduler
@@ -54,41 +55,74 @@ class MainWindow(ctk.CTk):
         self.update_keybind()
     
     def set_window_icon(self):
-        """Set the window icon to the logo"""
+        """Set the window icon using PIL with PyInstaller compatibility"""
         try:
-            # Get the path to the logo image
-            logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
+            import tkinter as tk
+            
+            # Get the path to the logo image with proper PyInstaller support
+            if hasattr(sys, '_MEIPASS'):
+                # Running as PyInstaller executable
+                logo_path = os.path.join(sys._MEIPASS, "gui", "assets", "logo.png")
+            else:
+                # Running as Python script
+                logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
+            
+            print(f"Looking for logo at: {logo_path}")
+            print(f"Logo exists: {os.path.exists(logo_path)}")
             
             if os.path.exists(logo_path):
-                # Load the image using PIL
-                logo_image = Image.open(logo_path)
-                
-                # Convert to PhotoImage for tkinter
-                from tkinter import PhotoImage
-                # We need to use a temporary file approach for PhotoImage with PNG
-                import tempfile
-                
-                # Convert to a format tkinter can handle
-                temp_path = tempfile.mktemp(suffix='.ppm')
-                logo_image.save(temp_path, 'PPM')
-                
-                # Load as PhotoImage
-                icon_photo = PhotoImage(file=temp_path)
-                
-                # Set the window icon
-                self.wm_iconphoto(True, icon_photo)
-                
-                # Store reference to prevent garbage collection
-                self._icon_photo = icon_photo
-                
-                # Clean up temp file
                 try:
-                    os.unlink(temp_path)
-                except:
-                    pass
+                    from PIL import Image
+                    import tempfile
+                    
+                    # Load and resize the image
+                    logo_image = Image.open(logo_path)
+                    logo_image = logo_image.resize((32, 32), Image.Resampling.LANCZOS)
+                    
+                    # Convert to PPM format for tkinter compatibility
+                    temp_path = tempfile.mktemp(suffix='.ppm')
+                    logo_image.save(temp_path, 'PPM')
+                    
+                    # Create PhotoImage
+                    icon_photo = tk.PhotoImage(file=temp_path)
+                    
+                    # Set the window icon
+                    self.wm_iconphoto(True, icon_photo)
+                    
+                    # Store reference to prevent garbage collection
+                    self._icon_photo = icon_photo
+                    
+                    print("Window icon set successfully!")
+                    
+                    # Clean up temp file
+                    try:
+                        os.unlink(temp_path)
+                    except:
+                        pass
+                        
+                except Exception as pil_error:
+                    print(f"PIL icon failed: {pil_error}, trying simple approach")
+                    # Fallback to simple PhotoImage if PIL fails
+                    try:
+                        icon_photo = tk.PhotoImage(file=logo_path)
+                        self.wm_iconphoto(True, icon_photo)
+                        self._icon_photo = icon_photo
+                        print("Fallback window icon set successfully!")
+                    except Exception as fallback_error:
+                        print(f"Fallback icon also failed: {fallback_error}")
+            else:
+                print("Logo file not found!")
                 
+            # Set window properties for proper taskbar integration
+            self.wm_iconname("SpecifInput")
+            
         except Exception as e:
             print(f"Could not set window icon: {e}")
+            # Fallback: at least set the icon name
+            try:
+                self.wm_iconname("SpecifInput")  
+            except:
+                pass
     
     def setup_ui(self):
         """Create and layout all UI elements"""
